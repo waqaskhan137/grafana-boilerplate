@@ -1,0 +1,35 @@
+version: '3.8'
+services:
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    env_file:
+      - .env
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./certs:/etc/grafana/ssl
+      - ./resource/grafana/provisioning:/etc/grafana/provisioning
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=secret
+      - GF_SECURITY_ALLOW_EMBEDDING=true
+      - GF_SERVER_CERT_FILE=/etc/grafana/ssl/cert.pem
+      - GF_SERVER_CERT_KEY=/etc/grafana/ssl/key.pem
+      - GF_SERVER_PROTOCOL=https
+  db:
+    image: postgres:13
+    container_name: db_service
+    env_file:
+      - .env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+      - ./resource/sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    deploy:
+      resources:
+        limits:
+          cpus: '1'  # Limit CPU usage to 2 cores
+          memory: '1G'  # Limit memory usage to 2GB
